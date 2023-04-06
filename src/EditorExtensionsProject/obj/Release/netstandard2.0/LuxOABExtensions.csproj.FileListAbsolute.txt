@@ -1,0 +1,13 @@
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\bin\Release\netstandard2.0\com.github.luxstice.oab_extensions.deps.json
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\bin\Release\netstandard2.0\com.github.luxstice.oab_extensions.dll
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\bin\Release\netstandard2.0\com.github.luxstice.oab_extensions.pdb
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\bin\Release\netstandard2.0\Unity.TextMeshPro.dll
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\obj\Release\netstandard2.0\LuxOABExtensions.csproj.AssemblyReference.cache
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\obj\Release\netstandard2.0\MyPluginInfo.cs
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\obj\Release\netstandard2.0\LuxOABExtensions.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\obj\Release\netstandard2.0\LuxOABExtensions.AssemblyInfoInputs.cache
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\obj\Release\netstandard2.0\LuxOABExtensions.AssemblyInfo.cs
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\obj\Release\netstandard2.0\LuxOABExtensions.csproj.CoreCompileInputs.cache
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\obj\Release\netstandard2.0\LuxOABExtensions.csproj.CopyComplete
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\obj\Release\netstandard2.0\com.github.luxstice.oab_extensions.dll
+C:\Users\costa\Desktop\EditorExtensions\src\EditorExtensionsProject\obj\Release\netstandard2.0\com.github.luxstice.oab_extensions.pdb
