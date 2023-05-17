@@ -356,7 +356,7 @@ static class Patcher
     [HarmonyPatch(typeof(ManipulationWidget), nameof(ManipulationWidget.CalculateTranslateLimits))]
     internal static void SetTranslationLimit(ref ManipulationWidget __instance)
     {
-        __instance.translateLimits *= 10f;
+        __instance.translateLimits *= LuxsOABExtensions.Instance.partTranslationLimitConfig.Value;
     }
 
 }

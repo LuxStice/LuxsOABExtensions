@@ -127,9 +127,10 @@ public class LuxsOABExtensions : BaseSpaceWarpPlugin
             _isWindowOpen = false;
     }
 
-    public ConfigEntry<bool> placementConfig;
-    public ConfigEntry<float> translationStepConfig;
-    public ConfigEntry<float> rotationStepConfig;
+    internal ConfigEntry<bool> placementConfig;
+    internal ConfigEntry<float> translationStepConfig;
+    internal ConfigEntry<float> rotationStepConfig;
+    internal ConfigEntry<float> partTranslationLimitConfig;
 
     private void ConfigureConfigManager()
     {
@@ -145,6 +146,9 @@ public class LuxsOABExtensions : BaseSpaceWarpPlugin
         ConfigDescription _rotationStepDescription = new("How much each button press (+ or -) should rotate the vessel", new AcceptableValueRange<float>(.1f, 90f));
         rotationStepConfig = Config.Bind(_rotationStepConfig, 5f, _rotationStepDescription);
 
+        ConfigDefinition _partTranslationLimitConfig = new("Part Manipulation", "TranslationLimitMultiplier");
+        ConfigDescription _partTranslationLimitDescription = new("Multiplies current translation limit by value", new AcceptableValueRange<float>(1f, 25f));
+        partTranslationLimitConfig = Config.Bind(_partTranslationLimitConfig, 10f, _partTranslationLimitDescription);
     }
 
     private List<(string name, UnityObject asset)> ImportConfig(string internalName, string filename)
