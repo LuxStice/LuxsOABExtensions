@@ -16,7 +16,7 @@ static class Patcher
     [HarmonyPatch(typeof(SymmetrySetPositionerRadial), MethodType.Constructor, new Type[] { typeof(int) })]
     private static void Prefix(ref int size, out int __state)
     {
-        if (size == 0 || size == 1 || size == 2 || size == 3 || size == 4 || size == 6 || size == 8)
+        if (size >= 0 && size <= 6)
         {
             __state = -1;
         }
@@ -41,8 +41,13 @@ static class Patcher
     [HarmonyPatch(typeof(SymmetrySet), "CreatePositionerFromMode")]
     private static bool Prefix(ref ISymmetrySetPositioner __result, BuilderSymmetryMode mode)
     {
-        __result = new SymmetrySetPositionerRadial(LuxsOABExtensions.SymmetryValue);
-        return false;
+        if (mode != BuilderSymmetryMode.MIRROR)
+        {
+            __result = new SymmetrySetPositionerRadial(LuxsOABExtensions.SymmetryValue);
+            return false;
+        }
+        else
+            return true;
     }
 
     [HarmonyPatch(typeof(SymmetrySet), "Create", new Type[] { typeof(ObjectAssemblyPartTracker), typeof(OABSessionInformation), typeof(IObjectAssemblyPart), typeof(BuilderSymmetryMode) })]
@@ -68,7 +73,7 @@ static class Patcher
             {
                 partGrabbed.SymmetrySet.Dispose();
             }
-                SymmetrySet.Create(__instance.builder._activePartTracker, __instance.builder.Stats, __instance.builder._activePartTracker.partGrabbed, value);
+            SymmetrySet.Create(__instance.builder._activePartTracker, __instance.builder.Stats, __instance.builder._activePartTracker.partGrabbed, value);
         }
         return false;
     }
@@ -108,26 +113,26 @@ static class Patcher
     {
         if (LuxsOABExtensions.listSet)
             return;
-            var list = new Dictionary<string, LOABESize>();
-            __instance._allKnownParts.ForEach(a =>
+        var list = new Dictionary<string, LOABESize>();
+        __instance._allKnownParts.ForEach(a =>
+        {
+            try
             {
-                try
+                LOABESize size = LuxsOABExtensions.GetByID((int)a.Size);
+                if (a.Name.Contains("m2"))
                 {
-                    LOABESize size = LuxsOABExtensions.GetByID((int)a.Size);
-                    if (a.Name.Contains("m2"))
-                    {
-                        size = LuxsOABExtensions.GetByAbbreviation("Mk2");
-                        LuxsOABExtensions.overrides.Add(a.Name, size);
-                    }
-                    if (a.Name.Contains("m3"))
-                    {
-                        size = LuxsOABExtensions.GetByAbbreviation("Mk3");
-                        LuxsOABExtensions.overrides.Add(a.Name, size);
-                    }
+                    size = LuxsOABExtensions.GetByAbbreviation("Mk2");
+                    LuxsOABExtensions.overrides.Add(a.Name, size);
                 }
-                catch { }
-            });
-            LuxsOABExtensions.listSet = true;
+                if (a.Name.Contains("m3"))
+                {
+                    size = LuxsOABExtensions.GetByAbbreviation("Mk3");
+                    LuxsOABExtensions.overrides.Add(a.Name, size);
+                }
+            }
+            catch { }
+        });
+        LuxsOABExtensions.listSet = true;
     }
 
     [HarmonyPatch(typeof(OABPartData), "Size", MethodType.Getter)]
@@ -266,9 +271,9 @@ static class Patcher
         [HarmonyPatch(typeof(ObjectAssemblyToolbar), "NextSymmetryMode")]
         private static bool Prefix(ref ObjectAssemblyToolbar __instance)
         {
-            if(__instance.OAB.ActivePartTracker.partGrabbed is not null && __instance.OAB.ActivePartTracker.PotentialParentPart is not null)
+            if (__instance.OAB.ActivePartTracker.partGrabbed is not null && __instance.OAB.ActivePartTracker.PotentialParentPart is not null)
             {
-                if(LuxsOABExtensions.TryFindConnectedNode(__instance.OAB.ActivePartTracker.partGrabbed, __instance.OAB.ActivePartTracker.PotentialParentPart, out var pair))
+                if (LuxsOABExtensions.TryFindConnectedNode(__instance.OAB.ActivePartTracker.partGrabbed, __instance.OAB.ActivePartTracker.PotentialParentPart, out var pair))
                 {
 
                     if (!pair.targetNode.NodeSymmetryGroupID.IsNullOrWhiteSpace())
@@ -318,7 +323,7 @@ static class Patcher
 
             if (index < 0)
             {
-                index = LuxsOABExtensions.RegularSymmetryModes.Length-1;
+                index = LuxsOABExtensions.RegularSymmetryModes.Length - 1;
             }
             int symmetry = LuxsOABExtensions.RegularSymmetryModes[index];
             LuxsOABExtensions.SymmetryValue = symmetry;
@@ -335,7 +340,7 @@ static class Patcher
         var enumerator = instructions.GetEnumerator();
         int index = -1;
 
-        while(enumerator.MoveNext())
+        while (enumerator.MoveNext())
         {
             var instruction = enumerator.Current;
             index++;
