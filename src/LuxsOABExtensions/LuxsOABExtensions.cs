@@ -29,8 +29,8 @@ public class LuxsOABExtensions : BaseSpaceWarpPlugin
 
     private const string ToolbarOABButtonID = "BTN-LuxOABExtensions";
     public static readonly int[] StockSymmetryModes = { 0, 1, 2, 3, 4, 6, 8 };
-
     public static int[] RegularSymmetryModes = StockSymmetryModes.AddRangeToArray(new int[7] {10, 12, 16, 20, 24, 32, 64 });
+    public static float[] RegularAngleSnapModes = { 0,1, 5, 10, 15, 20, 30, 45, 60, 90 };
 
     public static ObjectAssemblyBuilder CurrentOAB => Game.OAB.Current;
 
@@ -59,12 +59,20 @@ public class LuxsOABExtensions : BaseSpaceWarpPlugin
 
         ConfigureConfigManager();
         Game.Messages.Subscribe<GameStateLeftMessage>(GameStateLeft);
+        Patching.LOABESymmetryMode.Initialize();
+        Patching.LOABEAngleSnap.Initialize();
 
         Harmony.CreateAndPatchAll(typeof(LuxsOABExtensions).Assembly);
 
         LoadConfigs();
 
         //SpaceWarp.API.Loading.Loading.CreateAssetLoadingActionWithExtensions(PluginFolderPath, ImportConfig, "cfg");
+    }
+
+    void OnDestroy()
+    {
+        Patching.LOABESymmetryMode.OnDestroy();
+        Patching.LOABEAngleSnap.OnDestroy();
     }
 
     void LoadConfigs()
@@ -239,6 +247,8 @@ public class LuxsOABExtensions : BaseSpaceWarpPlugin
     public static int CustomSymmetryValue = 1;
     private static int lastSymmetry = 1;
 
+    public static bool LOABEAngleSnapMode = false;
+    public static int LOABEAngleSnapIndex = 3;
     public static bool LOABESymmetryMode = false;
     public static bool CustomSymmetryMode = false;
 
