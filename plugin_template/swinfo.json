@@ -1,14 +1,14 @@
 {
-  "spec": "1.3",
+  "spec": "1.4",
   "mod_id": "LuxsOABExtensions",
   "author": "LuxStice",
   "name": "Lux's OAB Extensions",
   "description": "A collection of QoL and improvments to the OAB aimed at players and modders.",
   "source": "https://github.com/LuxStice/LuxsOABExtensions",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "version_check": "https://raw.githubusercontent.com/LuxStice/LuxsOABExtensions/main/plugin_template/swinfo.json",
   "ksp2_version": {
-    "min": "0.1.3",
+    "min": "0.1.4",
     "max": "*"
   },
   "dependencies": [
