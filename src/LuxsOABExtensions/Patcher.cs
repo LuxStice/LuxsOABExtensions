@@ -3,6 +3,7 @@ using HarmonyLib;
 using I2.Loc;
 using KSP.OAB;
 using KSP.Sim.ResourceSystem;
+using KSP.UI;
 using System;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -13,30 +14,6 @@ namespace LuxsOABExtensions;
 [HarmonyPatch]
 static class Patcher
 {
-    [HarmonyPatch(typeof(AssemblyPartsPicker.FilterUtils), "GetSizeFullName")]
-    private static bool Prefix(ref string __result, AssemblySizeFilterType filterSubType)
-    {
-        if ((int)filterSubType <= 11)
-        {
-            return true;
-        }
-
-        __result = LuxsOABExtensions.GetByID((int)filterSubType).FullName;
-        //__result = OABLocalization.GetTranslation("VAB/Size/" + EditorExtensionsPlugin.GetByID((int)filterSubType).FullName);
-
-        return false;
-    }
-
-    [HarmonyPatch(typeof(AssemblyPartsPicker.FilterUtils), "GetSizeAbbreviation")]
-    private static void Postfix(ref string __result, AssemblySizeFilterType filterSubType)
-    {
-        if ((int)filterSubType <= 11)
-        {
-            return;
-        }
-
-        __result = LuxsOABExtensions.GetByID((int)filterSubType).AbbreviatedName;
-    }
 
     [HarmonyPatch(typeof(ObjectAssemblyPartTracker), "Initialize")]
     private static void Prefix(ref ObjectAssemblyPartTracker __instance)
@@ -138,25 +115,8 @@ static class Patcher
         }
     }
 
-    [HarmonyPatch(typeof(AssemblyPartsPicker), "GetFilterColorFromFilterEnum")]
-    [HarmonyPatch(typeof(AssemblyPartsPicker), "GetFilterHighlightColorFromFilterEnum")]
-    private static bool Prefix(ref Color __result, int filterSubType)
-    {
-        if (filterSubType <= 11)
-            return true;
 
-        (bool useColor, Color tagColor) SizeColor = LuxsOABExtensions.GetByID(filterSubType).TagColor;
-
-        if (SizeColor.useColor)
-        {
-            __result = SizeColor.tagColor;
-            return false;
-        }
-        else
-            return true;
-    }
-
-    [HarmonyPatch(typeof(AssemblyPartsPicker), "SetVisiblePartFilters")]
+    [HarmonyPatch(typeof(AssemblyPartsPicker), nameof(AssemblyPartsPicker.SetVisiblePartFilters))]
     private static bool Prefix(ref AssemblyPartsPicker __instance, List<IObjectAssemblyAvailablePart> parts)
     {
         List<AssemblyFilterContainer> partFilterContainers = __instance._partFilterContainers;
@@ -175,8 +135,8 @@ static class Patcher
                         filterContainer.SetFilter(AssemblyPartFilterType.Size, LuxsOABExtensions.Sizes[i].ID);
                         string headerName = OABLocalization.GetTranslation("VAB/Size/" + LuxsOABExtensions.Sizes[order].FullName);
                         __instance.SetAssemblyFilterHeaderName(ref filterContainer, headerName);
-                        filterContainer.SetFilterColor(__instance.GetFilterColorFromFilterEnum(order));
-                        filterContainer.SetFilterHighlightColor(__instance.GetFilterHighlightColorFromFilterEnum(order));
+                        filterContainer.SetFilterColor(AssemblyPartsPicker.GetFilterColorFromFilterEnum(order, __instance.filterColors));
+                        filterContainer.SetFilterHighlightColor(AssemblyPartsPicker.GetFilterColorFromFilterEnum(order, __instance.filterHighlightColors));
                         i++;
                         reverseCount--;
                     }
@@ -189,40 +149,7 @@ static class Patcher
         return false;
     }
 
-    [HarmonyPatch(typeof(ObjectAssemblyFlexibleModal), "ConfigureSizeInfo")]
-    private static bool Prefix(IObjectAssemblyAvailablePart part, ref ObjectAssemblyFlexibleModal __instance)
-    {
-        if ((int)part.Size <= 11)
-            return true;
-#pragma warning disable CS0012
-        __instance.sizeText.text = LuxsOABExtensions.GetByID((int)part.Size).AbbreviatedName;
-        //__instance.sizeText.text = __instance.TryToLocalizeToolTipString(EditorExtensionsPlugin.GetByID((int)part.Size).AbbreviatedName);
-        __instance.sizeText.color = LuxsOABExtensions.GetByID((int)part.Size).Color;
-#pragma warning restore CS0012
-        return false;
-    }
 
-
-    [HarmonyPatch(typeof(ObjectAssemblyPlacementTool), nameof(ObjectAssemblyPlacementTool.PerformSurfaceOffsetAdjustment))]
-    [HarmonyTranspiler]
-    static IEnumerable<CodeInstruction> ChangeSnapAngle(IEnumerable<CodeInstruction> instructions)
-    {
-
-        var enumerator = instructions.GetEnumerator();
-        int index = -1;
-
-        while (enumerator.MoveNext())
-        {
-            var instruction = enumerator.Current;
-            index++;
-            if (instruction.opcode == OpCodes.Ldc_R4 && index == 0)
-            {
-                yield return new CodeInstruction(OpCodes.Ldsfld, typeof(LuxsOABExtensions).GetField("AngleSnap", AccessTools.all));
-                continue;
-            }
-            yield return instruction;
-        }
-    }
 
     [HarmonyPatch(typeof(PartPlacementVFX), nameof(PartPlacementVFX.LoadAttachVFX))]
     [HarmonyPrefix]

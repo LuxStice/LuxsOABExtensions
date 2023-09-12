@@ -1,18 +1,40 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using KSP.Game;
+using KSP.Messages;
 using KSP.OAB;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
+using LuxsOABExtensions.Messages;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 
 namespace LuxsOABExtensions.Patching
 {
     [HarmonyPatch]
-    internal class SymmetryModePatcher
+    internal static class LOABESymmetryMode
     {
+        internal static SubscriptionHandle _loabeSymmetryChangedHandle;
+        internal static void Initialize()
+        {
+            _loabeSymmetryChangedHandle = GameManager.Instance.Game.Messages.PersistentSubscribe<LOABESymmetryChangedMessage>(new Action<MessageCenterMessage>(LOABESymmetryChangedMessage));
+        }
+
+        internal static void OnDestroy()
+        {
+            _loabeSymmetryChangedHandle.Release();
+        }
+
+        #region Messages
+
+        internal static void LOABESymmetryChangedMessage(MessageCenterMessage msg)
+        {
+            LOABESymmetryChangedMessage loabeSymmetryChangedMessage = msg as LOABESymmetryChangedMessage;
+            NotificationData notificationData = new NotificationData();
+            notificationData.Tier = NotificationTier.Passive;
+            notificationData.Primary.LocKey = $"Symmetry Mode: {loabeSymmetryChangedMessage.SymmetryMode}x";
+            GameManager.Instance.Game.Notifications.ProcessNotification(notificationData);
+        }
+
+        #endregion
         #region Essentials
         [HarmonyPrefix]
         [HarmonyPatch(typeof(SymmetrySetPositionerRadial), MethodType.Constructor, new Type[] { typeof(int) })]
@@ -49,9 +71,9 @@ namespace LuxsOABExtensions.Patching
                 FieldInfo fieldInfo = typeof(SymmetrySetPositionerRadial).GetField("_size", BindingFlags.Instance | BindingFlags.NonPublic);
                 if (fieldInfo != null)
                     fieldInfo.SetValue(
-                        __instance, 
-                        (LuxsOABExtensions.CustomSymmetryMode) 
-                            ? __state 
+                        __instance,
+                        (LuxsOABExtensions.CustomSymmetryMode)
+                            ? __state
                             : LuxsOABExtensions.RegularSymmetryModes[__state] //Turn index into actual value
                         );
             }
@@ -210,6 +232,7 @@ namespace LuxsOABExtensions.Patching
                     {
                         LuxsOABExtensions.LOABESymmetryMode = true;
                         __instance.SetSymmetryToolByEnum((BuilderSymmetryMode)nextSymmetry);
+                        GameManager.Instance.Game.Messages.Publish<LOABESymmetryChangedMessage>(new Messages.LOABESymmetryChangedMessage(LuxsOABExtensions.RegularSymmetryModes[nextSymmetry]));
                         LuxsOABExtensions.UpdateSprite();
                         //Has to be skiped since original method check if its between 0 and 6, and LOABE's modes are >6
                         __instance.justHold = false;
@@ -241,7 +264,7 @@ namespace LuxsOABExtensions.Patching
                 {
                     LuxsOABExtensions.CustomSymmetryMode = false;
 
-                    int indexOfRegularSymmetry = LuxsOABExtensions.RegularSymmetryModes.Length-1;
+                    int indexOfRegularSymmetry = LuxsOABExtensions.RegularSymmetryModes.Length - 1;
                     //Find next regular symmetry
                     //This has to be done ie, if we have a 9way symmetry, we gotta find what's the next regular one
                     int difrence = int.MaxValue;
@@ -290,6 +313,7 @@ namespace LuxsOABExtensions.Patching
                 {
                     LuxsOABExtensions.LOABESymmetryMode = true;
                     __instance.SetSymmetryToolByEnum((BuilderSymmetryMode)previousSymmetry);
+                    GameManager.Instance.Game.Messages.Publish<LOABESymmetryChangedMessage>(new Messages.LOABESymmetryChangedMessage(LuxsOABExtensions.RegularSymmetryModes[previousSymmetry]));
                     LuxsOABExtensions.UpdateSprite();
                     //Has to be skiped since original method check if its between 0 and 6, and LOABE's modes are >6
                     return false;
@@ -299,7 +323,7 @@ namespace LuxsOABExtensions.Patching
                 if (previousSymmetry < 0)
                 {
                     LuxsOABExtensions.LOABESymmetryMode = true;
-                    __instance.SetSymmetryToolByEnum((BuilderSymmetryMode)LuxsOABExtensions.RegularSymmetryModes.Length-1);
+                    __instance.SetSymmetryToolByEnum((BuilderSymmetryMode)LuxsOABExtensions.RegularSymmetryModes.Length - 1);
                     LuxsOABExtensions.UpdateSprite();
                     return false;
                 }
